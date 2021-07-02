@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# post-filters:
+#   split-dual-mono:
+#     command: mirakc/filters/split-dual-mono  # or inline the following command here
+
+# NOTE: Transcoded stream cannot be seekable.
+
+ffmpeg -i pipe:0 -hide_banner -vcodec copy \
+       -filter_complex "[0:a]channelsplit=channel_layout=stereo" \
+       -f mpegts pipe:1

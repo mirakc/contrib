@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+// filters:
+//   tuner-filter:
+//     command: >-
+//       mirakc/filters/replay '{{{channel_type}}}/{{{channel}}}' 'GR/27' /path/to/nhk.m2ts
+//
+// pre-filters:
+//   record:
+//     command: >-
+//       mirakc/filters/replay '{{{channel_type}}}/{{{channel}}' 'GR/27' /path/to/nhk.m2ts
+//
+// post-filters:
+//   record:
+//     # The following filter works only for service/program stream.
+//     command: >-
+//       mirakc/filters/replay '{{{channel_type}}}/{{{channel}}/{{{sid}}}' 'GR/27/1024'
+//       /path/to/nhk.m2ts
+
+// This filter is useful for debugging.
+
+const fs = require('fs');
+const { Transform, pipeline } = require('stream');
+
+const channel = process.argv[2];
+const targetChannel = process.argv[3];
+const record = process.argv[4];
+
+if (channel !== targetChannel) {
+  pipeline(process.stdin, process.stdout, (err) => {});  // cat
+  return;
+}
+
+class Replay extends Transform {
+  constructor(options) {
+    super(options)
+    this.stream = fs.createReadStream(options.record);
+  }
+
+  _transform(data, encoding, callback) {
+    // Replace TS packets with ones read from the file.
+    callback(null, this.stream.read(data.length));
+  }
+}
+
+pipeline(process.stdin, new Replay({ record }), process.stdout, (err) => {});

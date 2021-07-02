@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# filters:
+#   tuner-filter:
+#     command: >-
+#       mirakc/filters/record '{{{channel_type}}}/{{{channel}}}' 'GR/27' /path/to/nhk
+#
+# pre-filters:
+#   record:
+#     command: >-
+#       mirakc/filters/record '{{{channel_type}}}/{{{channel}}' 'GR/27' /path/to/nhk
+#
+# post-filters:
+#   record:
+#     # The following filter works only for service/program stream.
+#     command: >-
+#       mirakc/filters/record '{{{channel_type}}}/{{{channel}}/{{{sid}}}' 'GR/27/1024'
+#       /path/to/nhk
+
+# This filter is useful for debugging.
+
+ACTUAL="$1"
+TARGET="$2"
+RECORD="$3"
+
+if [ "$ACTUAL" = "$TARGET" ]
+then
+  tee "${RECORD}_$(date +'%Y-%m-%d-%H-%M-%S').m2ts"
+else
+  cat
+fi

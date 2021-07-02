@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# post-filters:
+#   mp4:
+#     command: mirakc/filters/mp4  # or inline the following command here
+#     content-type: video/mp4
+
+# NOTE: Transcoded stream cannot be seekable.
+
+ffmpeg -y -i pipe:0 -sn \
+       -c:a aac -ar 48000 -ac 2 -ab 192k \
+       -c:v h264 -s 1280x720 -vb 3000k -vf yadif \
+       -profile:v baseline -preset veryfast -tune fastdecode,zerolatency \
+       -movflags frag_keyframe+empty_moov+faststart+default_base_moof \
+       -f mp4 \
+       pipe:1
