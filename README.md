@@ -1,6 +1,6 @@
-# filters
+# helpers
 
-> A collection of mirakc filters
+> A collection of helper scripts for mirakc
 
 ## License
 
