@@ -1,6 +1,6 @@
-# helpers
+# contrib
 
-> A collection of helper scripts for mirakc
+> A collection of useful scripts and data for mirakc
 
 ## License
 
