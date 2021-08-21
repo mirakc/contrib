@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# filters:
+#   decode-filter:
+#     command: >-
+#       arib-decoder {{{channel_type}}}
+
+# You need to define the following environment variables like below:
+#
+#   # docker-compose.yml
+#   version: '3'
+#   services:
+#     mirakc:
+#       ..
+#       environment:
+#         MIRAKC_B1_DECODER: /path/to/arib-b1-stream-test
+#         MIRAKC_B25_DECODER: /path/to/arib-b25-stream-test
+#         ...
+
+# TODO: Test with SKY.
+
+CHANNEL_TYPE="$1"
+
+if [ "$CHANNEL_TYPE" = SKY ]
+then
+  echo 'Use B1 decoder' >&2
+  $MIRAKC_B1_DECODER
+else
+  echo 'Use B25 decoder' >&2
+  $MIRAKC_B25_DECODER
+fi
