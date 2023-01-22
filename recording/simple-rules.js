@@ -134,13 +134,6 @@ async function addRecordingSchedules(targets, service, programs, schedules) {
         console.info(`Matched: ${stringifyProgram(service, program)}`);
       } else {
         const date = format(new Date(program.startAt), "yyyyMMddHHmm");
-        console.log(JSON.stringify({
-          programId: program.id,
-          options: {
-            contentPath: `${folder}/${date}_${program.id}.m2ts`,
-          },
-          tags: Array.from(data.tags),
-        }));
         const resp = await fetch(`${base_url}/api/recording/schedules`, {
           method: 'POST',
           headers: {
