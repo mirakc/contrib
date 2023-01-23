@@ -2,6 +2,21 @@ import { format } from 'https://deno.land/std@0.173.0/datetime/mod.ts';
 import { default as docopt } from 'https://deno.land/x/docopt@v1.0.7/mod.ts';
 import { EventSource } from 'https://deno.land/x/eventsource@v0.0.3/mod.ts';
 
+const RULES = [
+  // ＮＨＫニュース７
+  async (service, program, targets) => {
+    if (service.id !== 3273601024) {
+      return;
+    }
+    if (program.name && program.name.includes("ＮＨＫニュース７")) {
+      addOrUpdateTargets(program, "ＮＨＫニュース７", targets);
+    }
+  },
+  // Add rules here
+];
+
+// CLI
+
 const DEFAULT_BASE_URL = 'http://localhost:40772';
 
 const DOC = `
@@ -66,20 +81,6 @@ source.addEventListener('epg.programs-updated', async (event) => {
   const programs = await getPrograms(service.id);
   await updateRecordingSchedules(service, programs);
 });
-
-// rules
-
-const RULES = [
-  // ＮＨＫニュース７
-  async (service, program, targets) => {
-    if (service.id !== 3273601024) {
-      return;
-    }
-    if (program.name && program.name.includes("ＮＨＫニュース７")) {
-      addOrUpdateTargets(program, "ＮＨＫニュース７", targets);
-    }
-  },
-];
 
 // helpers
 
