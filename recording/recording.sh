@@ -1,7 +1,13 @@
 PROGNAME="$(basename $0)"
 
+DATETIME_FMT='(.program.startAt / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
+TAGS_FMT='(.tags | join(" "))'
+FILTER="[.program.id, .state, $DATETIME_FMT, .program.name, $TAGS_FMT]"
+
 BASEURL=http://localhost:40772
 FOLDER=
+FORMATTER="jq -r '. | $FILTER | @csv'"
+LIST_FORMATTER="jq -r '.[] | $FILTER | @csv'"
 
 help() {
     cat <<EOF >&2
@@ -17,6 +23,9 @@ USAGE:
 OPTIONS:
   -h, --help
     Show the help.
+
+  -r, --raw
+    Output JSON returned from mirakc.
 
   -b, --base-url <BASE_URL> [default: '$BASEURL']
     A base URL of mirakc to use.
@@ -105,6 +114,11 @@ do
     '-h' | '--help')
       help
       ;;
+    '-r' | '--raw')
+      FORMATTER=cat
+      LIST_FORMATTER=cat
+      shift
+      ;;
     '-b' | '--base-url')
       BASEURL="$2"
       shift 2
@@ -114,11 +128,11 @@ do
       shift 2
       ;;
     'add')
-      add $2
+      add $2 | sh -c "$FORMATTER"
       shift 2
       ;;
     'start-recording')
-      start_recording $2
+      start_recording $2 | sh -c "$FORMATTER"
       shift 2
       ;;
     'delete')
@@ -126,7 +140,7 @@ do
       shift 2
       ;;
     'list')
-      list
+      list | sh -c "$LIST_FORMATTER"
       shift
       ;;
     'clear')
