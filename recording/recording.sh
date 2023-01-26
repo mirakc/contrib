@@ -16,12 +16,13 @@ help() {
     cat <<EOF >&2
 USAGE:
   $PROGNAME [options] add <program-id>
-  $PROGNAME [options] start-recording <program-id>
   $PROGNAME [options] delete <program-id>
   $PROGNAME [options] list
   $PROGNAME [options] show <program-id>
   $PROGNAME [options] clear
   $PROGNAME [options] clear-all
+  $PROGNAME [options] start <program-id>
+  $PROGNAME [options] stop <program-id>
   $PROGNAME -h | --help
 
 OPTIONS:
@@ -41,9 +42,6 @@ COMMANDS:
   add
     Add a recording schedule with the "manual" tag.
 
-  start-recording
-    Start recording with the "manual" tag.
-
   delete
     Delete a recording schedule.
 
@@ -58,6 +56,12 @@ COMMANDS:
 
   clear-all
     Clear all recording schedules.
+
+  start
+    Start recording with the "manual" tag.
+
+  stop
+    Stop a recording without deleting its recording schedule.
 EOF
     exit 0
 }
@@ -90,13 +94,6 @@ add() {
     -d "$(make_json $1)"
 }
 
-start_recording() {
-  curl "$BASEURL/api/recording/recorders" -s \
-    -X POST \
-    -H 'Content-Type: application/json' \
-    -d "$(make_json $1)"
-}
-
 delete() {
   curl "$BASEURL/api/recording/schedules/$1" -s \
     -X DELETE \
@@ -117,6 +114,19 @@ clear() {
 
 clear_all() {
   curl "$BASEURL/api/recording/schedules" -s -X DELETE
+}
+
+start() {
+  curl "$BASEURL/api/recording/recorders" -s \
+    -X POST \
+    -H 'Content-Type: application/json' \
+    -d "$(make_json $1)"
+}
+
+stop() {
+  curl "$BASEURL/api/recording/recorders/$1" -s \
+    -X DELETE \
+    -H 'Content-Type: application/json'
 }
 
 while [ $# -gt 0 ]
@@ -142,10 +152,6 @@ do
       add $2 | sh -c "$FORMATTER"
       shift 2
       ;;
-    'start-recording')
-      start_recording $2 | sh -c "$FORMATTER"
-      shift 2
-      ;;
     'delete')
       delete $2
       shift 2
@@ -165,6 +171,14 @@ do
     'clear-all')
       clear_all
       shift
+      ;;
+    'start')
+      start $2
+      shift 2
+      ;;
+    'stop')
+      stop $2
+      shift 2
       ;;
     *)
       break
