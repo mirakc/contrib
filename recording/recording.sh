@@ -16,6 +16,7 @@ USAGE:
   $PROGNAME [options] start-recording <program-id>
   $PROGNAME [options] delete <program-id>
   $PROGNAME [options] list
+  $PROGNAME [options] show <program-id>
   $PROGNAME [options] clear
   $PROGNAME [options] clear-all
   $PROGNAME -h | --help
@@ -46,6 +47,9 @@ COMMANDS:
   list
     List recording schedules.
 
+  show
+    Show a recording schedule.
+
   clear
     Clear recording schedules added using this script.
 
@@ -57,7 +61,7 @@ EOF
 
 make_json() {
   PROGRAM_ID=$1
-  PROGRAM=$(curl $BASEURL/api/programs/$PROGRAM_ID -sG)
+  PROGRAM=$(curl "$BASEURL/api/programs/$PROGRAM_ID" -sG)
   DATE=$(echo "$PROGRAM" | jq -Mr '.startAt / 1000 | strflocaltime("%Y%m%d%H%M")')
   if [ -n "$FOLDER" ]
   then
@@ -77,27 +81,31 @@ EOF
 }
 
 add() {
-  curl $BASEURL/api/recording/schedules -s \
+  curl "$BASEURL/api/recording/schedules" -s \
     -X POST \
     -H 'Content-Type: application/json' \
     -d "$(make_json $1)"
 }
 
 start_recording() {
-  curl $BASEURL/api/recording/recorders -s \
+  curl "$BASEURL/api/recording/recorders" -s \
     -X POST \
     -H 'Content-Type: application/json' \
     -d "$(make_json $1)"
 }
 
 delete() {
-  curl $BASEURL/api/recording/schedules/$1 -s \
+  curl "$BASEURL/api/recording/schedules/$1" -s \
     -X DELETE \
     -H 'Content-Type: application/json'
 }
 
 list() {
-  curl $BASEURL/api/recording/schedules -sG
+  curl "$BASEURL/api/recording/schedules" -sG
+}
+
+show() {
+  curl "$BASEURL/api/recording/schedules/$1" -sG
 }
 
 clear() {
@@ -105,7 +113,7 @@ clear() {
 }
 
 clear_all() {
-  curl $BASEURL/api/recording/schedules -s -X DELETE
+  curl "$BASEURL/api/recording/schedules" -s -X DELETE
 }
 
 while [ $# -gt 0 ]
@@ -142,6 +150,10 @@ do
     'list')
       list | sh -c "$LIST_FORMATTER"
       shift
+      ;;
+    'show')
+      show $2 | sh -c "$FORMATTER"
+      shift 2
       ;;
     'clear')
       clear
