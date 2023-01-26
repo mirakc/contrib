@@ -1,8 +1,11 @@
 PROGNAME="$(basename $0)"
 
-DATETIME_FMT='(.program.startAt / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
+START_FMT='(.program.startAt / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
+# If no duration is specified, show startAt.
+END_FMT='((.program.startAt + (.program.duration // 0)) / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
+DURATION_FMT='((.program.duration // 0) / 60000)'
 TAGS_FMT='(.tags | join(" "))'
-FILTER="[.program.id, .state, $DATETIME_FMT, .program.name, $TAGS_FMT]"
+FILTER="[.program.id, .state, $START_FMT, $END_FMT, $DURATION_FMT, .program.name, $TAGS_FMT]"
 
 BASEURL=http://localhost:40772
 FOLDER=
