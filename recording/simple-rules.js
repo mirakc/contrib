@@ -1,6 +1,6 @@
-import { format } from 'https://deno.land/std@0.173.0/datetime/mod.ts';
-import { default as docopt } from 'https://deno.land/x/docopt@v1.0.7/mod.ts';
-import { EventSource } from 'https://deno.land/x/eventsource@v0.0.3/mod.ts';
+import { format } from 'https://deno.land/std/datetime/mod.ts';
+import { default as docopt } from 'https://deno.land/x/docopt/mod.ts';
+import { EventSource } from 'https://deno.land/x/eventsource/mod.ts';
 
 const RULES = [
   // ＮＨＫニュース７
