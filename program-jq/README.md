@@ -18,7 +18,7 @@ curl http://mirakc:40772/api/programs | jq -f localtime.jq
 Show summary in CSV:
 
 ```sh
-# <program.id>,<startTime or startAt>,<endTime or duration>,<name>
+# <id>,<startTime or startAt>,<endTime or duration>,<name>
 curl http://mirakc:40772/api/programs | jq -f not-started.jq | \
   jq -f sports.jq | jq -f localtime.jq | jq -f summary-csv.jq
 ```
