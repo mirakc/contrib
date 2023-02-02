@@ -1,1 +1,1 @@
-sort_by(.startAt) | .[] | [.id, .startTime // .startAt, .endTime // .duration // 0, .name ] | @csv
+sort_by(.startAt) | .[] | if has("startTime") then [.id, .startTime, .endTime, .duration / 60000, .name ] else [.id, .startAt, .duration, .name] end | @csv
