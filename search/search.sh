@@ -5,13 +5,13 @@ BASE_DIR="$(cd $(dirname $0); pwd)"
 
 PROGRAM_JQ_DIR=$BASE_DIR/../program-jq
 CUSTOM_PROGRAM_JQ_DIR=${MIRAKC_SEARCH_CUSTOM_PROGRAM_JQ_DIR:-}
-DEFAULT_BASE_URL=${MIRAKC_SEARCH_BASE_URL:-http://mirakc:40772}
+DEFAULT_BASE_URL=${MIRAKC_SEARCH_BASE_URL:-http://localhost:40772}
 
 JSON=
 BASE_URL=$DEFAULT_BASE_URL
 
 help() {
-    cat <<EOF_ >&2
+    cat <<EOF >&2
 USAGE:
   $PROGNAME [options] [<filter>...]
   $PROGNAME -h | --help
@@ -31,14 +31,13 @@ EXAMPLES:
     $PROGNAME movie gt-1h
 
 NOTE:
-  It's recommended to create the following shell script named mirakc-search:
+  It's recommended to create a shell script named mirakc-search like below:
 
     #!/bin/sh
-    export MIRAKC_SEARCH_CUSTOM_PROGRAM_JQ_DIR=/path/to/program-jq
     export MIRAKC_SEARCH_BASE_URL=http://your-mirakc:40772
+    export MIRAKC_SEARCH_CUSTOM_PROGRAM_JQ_DIR=/path/to/program-jq
     sh /path/to/mirakc/contrib/search/search.sh \$@
-
-EOF_
+EOF
     exit 0
 }
 
