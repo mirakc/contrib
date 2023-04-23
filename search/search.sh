@@ -50,6 +50,17 @@ error() {
   exit 1
 }
 
+append_services() {
+  SERVICES=$(curl "$BASE_URL/api/services" -sG)
+  while read -r TSV
+  do
+    ID=$(echo "$TSV" | cut -f 1)
+    SERVICE_ID=$(expr $ID / 100000)
+    SERVICE=$(echo "$SERVICES" | jq -r ".[] | select(.id == $SERVICE_ID) | .name")
+    echo -e "$TSV\t$SERVICE"
+  done
+}
+
 while [ $# -gt 0 ]
 do
   case "$1" in
@@ -70,17 +81,17 @@ do
   esac
 done
 
-CMD="curl $BASE_URL/api/programs -sG"
-CMD="$CMD | jq -f $PROGRAM_JQ_DIR/not-started.jq"
+RES=$(curl $BASE_URL/api/programs -sG)
+RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/not-started.jq)
 for FILTER in $@
 do
   if [ -f "$CUSTOM_PROGRAM_JQ_DIR/$FILTER.jq" ]
   then
-    CMD="$CMD | jq -f $CUSTOM_PROGRAM_JQ_DIR/$FILTER.jq"
+    RES=$(echo "$RES" | jq -f $CUSTOM_PROGRAM_JQ_DIR/$FILTER.jq)
   else
     if [ -f "$PROGRAM_JQ_DIR/$FILTER.jq" ]
     then
-      CMD="$CMD | jq -f $PROGRAM_JQ_DIR/$FILTER.jq"
+      RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/$FILTER.jq)
     else
       error "no such filter: $FILTER"
     fi
@@ -88,13 +99,14 @@ do
 done
 if [ "$JSON" = 1 ]
 then
-  CMD="$CMD | jq -Mc '.'"
+  RES=$(echo "$RES" | jq -Mc '.')
 else
-  CMD="$CMD | jq -f $PROGRAM_JQ_DIR/localtime.jq"
-  CMD="$CMD | jq -f $PROGRAM_JQ_DIR/summary.jq"
-  CMD="$CMD | jq -r '. | @tsv'"
-  CMD="$CMD | sed -e '1i ID\tSTART\tEND\tMINS\tTITLE'"
-  CMD="$CMD | column -s $'\t' -t"
+  RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/localtime.jq)
+  RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/summary.jq)
+  RES=$(echo "$RES" | jq -r '. | @tsv')
+  RES=$(echo "$RES" | append_services)
+  RES=$(echo "$RES" | sed -e '1i ID\tSTART\tEND\tMINS\tTITLE\tSERVICE')
+  RES=$(echo "$RES" | column -s $'\t' -t)
 fi
 
-sh -c "$CMD"
+echo "$RES"

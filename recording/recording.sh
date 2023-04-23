@@ -2,29 +2,12 @@ set -eu
 
 PROGNAME="$(basename $0)"
 
-START_FMT='(.program.startAt / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
-# If no duration is specified, show startAt.
-END_FMT='((.program.startAt + (.program.duration // 0)) / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
-DURATION_FMT='((.program.duration // 0) / 60000)'
-TAGS_FMT='(.tags | join(" "))'
-FILTER="[.program.id, .state, $START_FMT, $END_FMT, $DURATION_FMT, .program.name, $TAGS_FMT]"
-
 DEFAULT_BASE_URL=${MIRAKC_REC_BASE_URL:-http://localhost:40772}
 DEFAULT_FOLDER=${MIRAKC_REC_FOLDER:-}
 
+JSON=
 BASE_URL=$DEFAULT_BASE_URL
 FOLDER=$DEFAULT_FOLDER
-
-LABELS="sed -e '1i ID\tSTATE\tSTART\tEND\tMINS\tTITLE\tTAGS'"
-COLUMN="column -s$'\t' -t"
-
-FORMATTER="jq -r '. | $FILTER | @tsv'"
-FORMATTER="$FORMATTER | $LABELS"
-FORMATTER="$FORMATTER | $COLUMN"
-
-LIST_FORMATTER="jq -r '.[] | $FILTER | @tsv'"
-LIST_FORMATTER="$LIST_FORMATTER | $LABELS"
-LIST_FORMATTER="$LIST_FORMATTER | $COLUMN"
 
 help() {
     cat <<EOF >&2
@@ -150,6 +133,53 @@ stop() {
     -H 'Content-Type: application/json'
 }
 
+render() {
+  START_FMT='(.program.startAt / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
+  # If no duration is specified, show startAt.
+  END_FMT='((.program.startAt + (.program.duration // 0)) / 1000 | strflocaltime("%Y-%m-%d %H:%M"))'
+  DURATION_FMT='((.program.duration // 0) / 60000)'
+  # First, we put a placeholder string <SERVICE> into a TSV string. And then we
+  # replace it with an actual service name in `replace_services`.
+  SERVICE_FMT='"<SERVICE>"'
+  TAGS_FMT='(.tags | join(" "))'
+  FILTER="[.program.id, .state, $START_FMT, $END_FMT, $DURATION_FMT, .program.name, $SERVICE_FMT, $TAGS_FMT]"
+  LABELS='ID\tSTATE\tSTART\tEND\tMINS\tTITLE\tSERVICE\tTAGS'
+
+  TYP=$1
+
+  RES=$(cat)
+  if [ "$JSON" = 1 ]
+  then
+    RES=$(echo "$RES" | jq -Mc '.')
+  else
+    if [ "$TYP" = 'list' ]
+    then
+      RES=$(echo "$RES" | jq -r ".[] | $FILTER | @tsv")
+    else
+      RES=$(echo "$RES" | jq -r ". | $FILTER | @tsv")
+    fi
+    RES=$(echo "$RES" | replace_services)
+    RES=$(echo "$RES" | sed -e "1i $LABELS")
+    RES=$(echo "$RES" | column -s$'\t' -t)
+  fi
+  echo "$RES"
+}
+
+replace_services() {
+  SERVICES=$(curl "$BASE_URL/api/services" -sG)
+  while read -r TSV
+  do
+    ID=$(echo "$TSV" | cut -f 1)
+    SERVICE_ID=$(expr $ID / 100000)
+    SERVICE=$(echo "$SERVICES" | jq -r ".[] | select(.id == $SERVICE_ID) | .name")
+    echo "$TSV" | sed "s/<SERVICE>/$SERVICE/"
+  done
+}
+
+prepare_replace_services() {
+  export -f replace_services
+}
+
 while [ $# -gt 0 ]
 do
   case "$1" in
@@ -157,8 +187,7 @@ do
       help
       ;;
     '-j' | '--json')
-      FORMATTER=cat
-      LIST_FORMATTER=cat
+      JSON=1
       shift
       ;;
     '-b' | '--base-url')
@@ -170,7 +199,7 @@ do
       shift 2
       ;;
     'add')
-      add $2 | sh -c "$FORMATTER"
+      add $2 | render ''
       shift 2
       ;;
     'delete')
@@ -178,11 +207,11 @@ do
       shift 2
       ;;
     'list')
-      list | sh -c "$LIST_FORMATTER"
+      list | render 'list'
       shift
       ;;
     'show')
-      show $2 | sh -c "$FORMATTER"
+      show $2 | render ''
       shift 2
       ;;
     'clear')
