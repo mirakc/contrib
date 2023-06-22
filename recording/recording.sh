@@ -65,7 +65,7 @@ NOTE:
 
     #!/bin/sh
     export MIRAKC_REC_BASE_URL=http://your-mirakc:40772
-    sh /path/to/mirakc/contrib/search/search.sh \$@
+    sh /path/to/mirakc/contrib/search/search.sh "\$@"
 EOF
     exit 0
 }
