@@ -30,13 +30,16 @@ EXAMPLES:
   Show movies:
     $PROGNAME movie gt-1h
 
+  Show BSP:
+    $PROGNAME '[.[] | select(.serviceId == 103)]'
+
 NOTE:
   It's recommended to create a shell script named mirakc-search like below:
 
     #!/bin/sh
     export MIRAKC_SEARCH_BASE_URL=http://your-mirakc:40772
     export MIRAKC_SEARCH_CUSTOM_PROGRAM_JQ_DIR=/path/to/program-jq
-    sh /path/to/mirakc/contrib/search/search.sh \$@
+    sh /path/to/mirakc/contrib/search/search.sh "\$@"
 EOF
     exit 0
 }
@@ -83,7 +86,7 @@ done
 
 RES=$(curl $BASE_URL/api/programs -sG)
 RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/not-started.jq)
-for FILTER in $@
+for FILTER in "$@"
 do
   if [ -f "$CUSTOM_PROGRAM_JQ_DIR/$FILTER.jq" ]
   then
@@ -93,7 +96,7 @@ do
     then
       RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/$FILTER.jq)
     else
-      error "no such filter: $FILTER"
+      RES=$(echo "$RES" | jq "$FILTER")
     fi
   fi
 done
