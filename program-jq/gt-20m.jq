@@ -1,1 +1,1 @@
-[.[] | select((.duration // 0) >= 20 * 60000)]
+map(select((.duration // 0) >= 20 * 60000))

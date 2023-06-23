@@ -1,1 +1,1 @@
-[.[] | select(has("startAt") and (.startAt / 1000 > now))]
+map(select(has("startAt") and (.startAt / 1000 > now)))

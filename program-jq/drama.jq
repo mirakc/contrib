@@ -1,1 +1,1 @@
-[.[] | select(has("genres") and (.genres | any(.lv1 == 3)))]
+map(select(has("genres") and (.genres | any(.lv1 == 3))))
