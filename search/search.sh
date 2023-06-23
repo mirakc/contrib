@@ -54,14 +54,11 @@ error() {
 }
 
 append_services() {
-  SERVICES=$(curl "$BASE_URL/api/services" -sG)
-  while read -r TSV
-  do
-    ID=$(echo "$TSV" | cut -f 1)
-    SERVICE_ID=$(expr $ID / 100000)
-    SERVICE=$(echo "$SERVICES" | jq -r ".[] | select(.id == $SERVICE_ID) | .name")
-    echo -e "$TSV\t$SERVICE"
-  done
+  SERVICES=$(curl "$BASE_URL/api/services" -sG | \
+               jq -c 'map({ key: (.id | tostring), value: .name }) | from_entries')
+  jq -f $PROGRAM_JQ_DIR/msid.jq | \
+    jq --argjson SERVICES "$SERVICES" \
+      'map(. + {service: $SERVICES[.msid | tostring]})'
 }
 
 while [ $# -gt 0 ]
@@ -104,10 +101,10 @@ if [ "$JSON" = 1 ]
 then
   RES=$(echo "$RES" | jq -Mc '.')
 else
+  RES=$(echo "$RES" | append_services)
   RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/localtime.jq)
   RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/summary.jq)
   RES=$(echo "$RES" | jq -r '. | @tsv')
-  RES=$(echo "$RES" | append_services)
   RES=$(echo "$RES" | sed -e '1i ID\tSTART\tEND\tMINS\tTITLE\tSERVICE')
   RES=$(echo "$RES" | column -s $'\t' -t)
 fi
