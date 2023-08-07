@@ -30,9 +30,6 @@ COMMANDS:
   status
     Show status of recorders.
 
-  status <recorder>
-    Show status of a recorder.
-
   list <recorder>
     List records of <recorder>.
 
