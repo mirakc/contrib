@@ -12,15 +12,15 @@ FOLDER=$DEFAULT_FOLDER
 help() {
     cat <<EOF >&2
 USAGE:
+  $PROGNAME [options] [list]
   $PROGNAME [options] add <program-id>
   $PROGNAME [options] delete <program-id>
-  $PROGNAME [options] list
   $PROGNAME [options] show <program-id>
   $PROGNAME [options] clear
   $PROGNAME [options] clear-all
   $PROGNAME [options] start <program-id>
   $PROGNAME [options] stop <program-id>
-  $PROGNAME -h | --help
+  $PROGNAME -h | --help | help
 
 OPTIONS:
   -h, --help
@@ -36,14 +36,14 @@ OPTIONS:
     The name (or relative path) of a folder to store recording files.
 
 COMMANDS:
+  list (default command)
+    List recording schedules.
+
   add
     Add a recording schedule with the "manual" tag.
 
   delete
     Delete a recording schedule.
-
-  list
-    List recording schedules.
 
   show
     Show a recording schedule.
@@ -91,33 +91,39 @@ make_json() {
 EOF
 }
 
+list() {
+  curl "$BASE_URL/api/recording/schedules" -sG
+  exit 0
+}
+
 add() {
   curl "$BASE_URL/api/recording/schedules" -s \
     -X POST \
     -H 'Content-Type: application/json' \
     -d "$(make_json $1)"
+  exit 0
 }
 
 delete() {
   curl "$BASE_URL/api/recording/schedules/$1" -s \
     -X DELETE \
     -H 'Content-Type: application/json'
-}
-
-list() {
-  curl "$BASE_URL/api/recording/schedules" -sG
+  exit 0
 }
 
 show() {
   curl "$BASE_URL/api/recording/schedules/$1" -sG
+  exit 0
 }
 
 clear() {
   curl "$BASE_URL/api/recording/schedules?tag=manual" -s -X DELETE
+  exit 0
 }
 
 clear_all() {
   curl "$BASE_URL/api/recording/schedules" -s -X DELETE
+  exit 0
 }
 
 start() {
@@ -125,12 +131,14 @@ start() {
     -X POST \
     -H 'Content-Type: application/json' \
     -d "$(make_json $1)"
+  exit 0
 }
 
 stop() {
   curl "$BASE_URL/api/recording/recorders/$1" -s \
     -X DELETE \
     -H 'Content-Type: application/json'
+  exit 0
 }
 
 render() {
@@ -198,40 +206,35 @@ do
       FOLDER="$2"
       shift 2
       ;;
+    'list')
+      list | render 'list'
+      ;;
     'add')
       add $2 | render ''
-      shift 2
       ;;
     'delete')
       delete $2
-      shift 2
-      ;;
-    'list')
-      list | render 'list'
-      shift
       ;;
     'show')
       show $2 | render ''
-      shift 2
       ;;
     'clear')
       clear
-      shift
       ;;
     'clear-all')
       clear_all
-      shift
       ;;
     'start')
       start $2
-      shift 2
       ;;
     'stop')
       stop $2
-      shift 2
       ;;
     *)
-      break
+      help
       ;;
   esac
 done
+
+# default command
+list | render 'list'

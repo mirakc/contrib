@@ -10,7 +10,7 @@ BASE_URL=$DEFAULT_BASE_URL
 help() {
     cat <<EOF >&2
 USAGE:
-  $PROGNAME [options] status
+  $PROGNAME [options] [status]
   $PROGNAME [options] list <recorder>
   $PROGNAME [options] show <recorder> <record-id>
   $PROGNAME [options] stream <recorder> <record-id>
@@ -27,7 +27,7 @@ OPTIONS:
     A base URL of mirakc to use.
 
 COMMANDS:
-  status
+  status (default command)
     Show status of recorders.
 
   list <recorder>
@@ -64,18 +64,22 @@ EOF
 
 status() {
   curl "$BASE_URL/api/timeshift" -sG
+  exit 0
 }
 
 list() {
   curl "$BASE_URL/api/timeshift/$1/records" -sG
+  exit 0
 }
 
 show() {
   curl "$BASE_URL/api/timeshift/$1/records/$2" -sG
+  exit 0
 }
 
 stream() {
   curl "$BASE_URL/api/timeshift/$1/records/$2/stream" -sG
+  exit 0
 }
 
 render_status() {
@@ -138,22 +142,21 @@ do
       ;;
     'status')
       status | render_status
-      shift
       ;;
     'list')
       list $2 | render 'list'
-      shift 2
       ;;
     'show')
       show $2 $3 | render ''
-      shift 3
       ;;
     'stream')
       stream $2 $3
-      shift 3
       ;;
     *)
-      break
+      help
       ;;
   esac
 done
+
+# default command
+status | render_status
