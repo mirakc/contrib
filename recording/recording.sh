@@ -93,7 +93,6 @@ EOF
 
 list() {
   curl "$BASE_URL/api/recording/schedules" -sG
-  exit 0
 }
 
 add() {
@@ -101,29 +100,24 @@ add() {
     -X POST \
     -H 'Content-Type: application/json' \
     -d "$(make_json $1)"
-  exit 0
 }
 
 delete() {
   curl "$BASE_URL/api/recording/schedules/$1" -s \
     -X DELETE \
     -H 'Content-Type: application/json'
-  exit 0
 }
 
 show() {
   curl "$BASE_URL/api/recording/schedules/$1" -sG
-  exit 0
 }
 
 clear() {
   curl "$BASE_URL/api/recording/schedules?tag=manual" -s -X DELETE
-  exit 0
 }
 
 clear_all() {
   curl "$BASE_URL/api/recording/schedules" -s -X DELETE
-  exit 0
 }
 
 start() {
@@ -131,14 +125,12 @@ start() {
     -X POST \
     -H 'Content-Type: application/json' \
     -d "$(make_json $1)"
-  exit 0
 }
 
 stop() {
   curl "$BASE_URL/api/recording/recorders/$1" -s \
     -X DELETE \
     -H 'Content-Type: application/json'
-  exit 0
 }
 
 render() {
@@ -208,27 +200,35 @@ do
       ;;
     'list')
       list | render 'list'
+      exit 0
       ;;
     'add')
       add $2 | render ''
+      exit 0
       ;;
     'delete')
       delete $2
+      exit 0
       ;;
     'show')
       show $2 | render ''
+      exit 0
       ;;
     'clear')
       clear
+      exit 0
       ;;
     'clear-all')
       clear_all
+      exit 0
       ;;
     'start')
       start $2
+      exit 0
       ;;
     'stop')
       stop $2
+      exit 0
       ;;
     *)
       help

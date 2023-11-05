@@ -64,22 +64,18 @@ EOF
 
 status() {
   curl "$BASE_URL/api/timeshift" -sG
-  exit 0
 }
 
 list() {
   curl "$BASE_URL/api/timeshift/$1/records" -sG
-  exit 0
 }
 
 show() {
   curl "$BASE_URL/api/timeshift/$1/records/$2" -sG
-  exit 0
 }
 
 stream() {
   curl "$BASE_URL/api/timeshift/$1/records/$2/stream" -sG
-  exit 0
 }
 
 render_status() {
@@ -138,19 +134,22 @@ do
       ;;
     '-b' | '--base-url')
       BASE_URL="$2"
-      shift 2
       ;;
     'status')
       status | render_status
+      exit 0
       ;;
     'list')
       list $2 | render 'list'
+      exit 0
       ;;
     'show')
       show $2 $3 | render ''
+      exit 0
       ;;
     'stream')
       stream $2 $3
+      exit 0
       ;;
     *)
       help
