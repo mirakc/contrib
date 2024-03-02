@@ -80,8 +80,8 @@ stream() {
 
 render_status() {
   DURATION_FMT='(.duration / 60 / 60 / 1000 | floor)'
-  FILTER="[.name, .service.name, $DURATION_FMT, .recording, .currentRecordId]"
-  LABELS='NAME\tSERVICE\tHOURS\tRECORDING\tON-AIR'
+  FILTER="[.name, .service.name, $DURATION_FMT, .numRecords, .recording, .currentRecordId]"
+  LABELS='NAME\tSERVICE\tHOURS\t#RECORDS\tRECORDING\tON-AIR'
 
   RES=$(cat)
   if [ "$JSON" = 1 ]
