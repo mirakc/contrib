@@ -169,6 +169,10 @@ replace_services() {
   SERVICES=$(curl "$BASE_URL/api/services" -sG)
   while read -r TSV
   do
+    if [ -z "$TSV" ]
+    then
+      continue
+    fi
     ID=$(echo "$TSV" | cut -f 1)
     SERVICE_ID=$(expr $ID / 100000)
     SERVICE=$(echo "$SERVICES" | jq -r ".[] | select(.id == $SERVICE_ID) | .name")
