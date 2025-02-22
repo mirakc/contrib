@@ -82,7 +82,7 @@ do
 done
 
 RES=$(curl $BASE_URL/api/programs -sG)
-RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/not-started.jq)
+RES=$(echo "$RES" | jq -f $PROGRAM_JQ_DIR/not-ended.jq)
 for FILTER in "$@"
 do
   if [ -f "$CUSTOM_PROGRAM_JQ_DIR/$FILTER.jq" ]
