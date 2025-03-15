@@ -134,6 +134,7 @@ do
       ;;
     '-b' | '--base-url')
       BASE_URL="$2"
+      shift 2
       ;;
     'status')
       status | render_status
